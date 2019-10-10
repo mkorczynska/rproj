@@ -1,5 +1,5 @@
 ####Zadanie 1
-dane<-read.csv2("H://R-zaawansowany/lab_R/market.csv", sep =",", header=T)
+dane<-read.csv2("C://Users/HP ENVY/Documents/R/Projects/rproj/market.csv", sep =",", header=T)
 show(dane)
 ilosc<-nrow(dane)
 suma<-sum(dane[,5])
