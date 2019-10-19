@@ -72,6 +72,10 @@ plot(series)
 #--------------
 
 ####Zadanie 5
+getData<-function(name){
+  dane<-read.csv(paste0("https://stooq.pl/q/d/l/?s=", name,
+                        "&d1=20171001&d2=20181031&i=d"), head =T, sep=",", dec=".")
+}
 #a
 #b
 #--------------
