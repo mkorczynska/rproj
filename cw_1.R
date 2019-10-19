@@ -1,16 +1,16 @@
 setwd("C://Users/HP ENVY/Documents/R/Projects/rproj")
 
 ####Zadanie 1
-dane<-read.csv2("market.csv", sep =",", header=T)
+market<-read.csv2("market.csv", sep =",", header=T)
 quantity<-nrow(dane)
 
-sum(dane[,5])
+sum(market[,5])
 
-cena<-as.numeric(dane$cena)
-ilosc<-as.numeric(dane$cena)
+cena<-as.numeric(market$cena)
+ilosc<-as.numeric(market$cena)
 suma<-sum(cena*ilosc)
 
-tab<-table(dane[,3])
+tab<-table(market[,3])
 tab_df<-as.data.frame(tab)
 sort(tab, decreasing=TRUE)[1:3]
 
