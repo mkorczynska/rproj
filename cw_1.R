@@ -1,6 +1,15 @@
 setwd("C://Users/HP ENVY/Documents/R/Projects/rproj")
 setwd("H://R-zaawansowany/lab_R")
 
+install.packages("pracma")
+library(pracma)
+
+install.packages("stringr")
+library(stringr)
+
+install.packages("quantmod")
+library(quantmod)
+
 ####Zadanie 1####
 market<-read.csv2("market.csv", sep =",", header=T)
 
@@ -27,62 +36,65 @@ tail(total_ordered, 3)
 
 ####Zadanie 2
 #a
-#crime<-read.table(file = 'crim_just_sex.tsv', sep = '\t', header = TRUE)
-crime<-read.csv2(file = "crim_just_sex_1_Data.csv", sep = ',', header = TRUE)
-crime$Value<-as.character(crime$Value)
+crime<-read.delim2(file = 'crim_just_sex.tsv', header=TRUE, na.string=": ")
 any(is.na(crime))
+sum_nan<-sum(is.na(crime))
 
 #b
-geo_value<-aggregate(Value ~ GEO, data = crime, mean) #co zrobic z na?
+first_col<-crime$leg_stat.sex.unit.geo.time
 
-#c
-time_value<-aggregate(Value ~ TIME, data = crime, mean) #co zrobic z na?
-hist()
+first_col<-str_sub(first_col, -2, -1)
+crime_2<-cbind(first_col, crime)
+crime_2<-as.data.frame(crime_2)
 
-#d
-par(mfcol=c(2,1))
-hist()
-boxplot()
-par(mfcol=c(1,1))
+crime_2$X2017<-as.numeric(as.character(crime_2$X2017))
+crime_2$X2016<-as.numeric(as.character(crime_2$X2016))
+crime_2$X2015<-as.numeric(as.character(crime_2$X2015))
+crime_2$X2014<-as.numeric(as.character(crime_2$X2014))
+crime_2$X2013<-as.numeric(as.character(crime_2$X2013))
+crime_2$X2012<-as.numeric(as.character(crime_2$X2012))
+crime_2$X2011<-as.numeric(as.character(crime_2$X2011))
+crime_2$X2010<-as.numeric(as.character(crime_2$X2010))
+crime_2$X2009<-as.numeric(as.character(crime_2$X2009))
+crime_2$X2008<-as.numeric(as.character(crime_2$X2008))
 
-#e
-
+row_sums<-rowSums(crime_2[,3:12], na.rm = T)
+crime_sum<-aggregate(row_sums ~ first_col, data = crime_2, sum)
+pl_mean<-crime_sum[33,2]/10
 #-------------
 
 ####Zadanie 3####
 gold<-read.csv2("zloto.csv", sep =";", header=T, dec = ".")
 length(gold[,1])
+
+#a
 dates_3<-seq(as.Date("2017/02/02"), as.Date("2018/11/20"), length.out = 488)
 gold[,1]<-dates_3
 
+#b
 head(gold)
 tail(gold, 10)
 
+#c
 month<-months(gold[,1])
 year <- format(gold[,1],format="%y")
 aggregate(gold$Zamkniecie~month+year, gold, mean)
 #--------------
 
-####Zadanie 4
+####Zadanie 4####
 wig20<-read.csv2("wig20.csv", sep =";", header=T, dec = ".")
 
 time_series <- ts(wig20$Zamkniecie, start=c(2014, 1), end=c(2018, 12), frequency=12)
 show(time_series)
-plot(time_series, xlim=c(0,60))
+plot(time_series)
 
 moving_average<-movavg(time_series, 6, "s")
-lines(moving_average, col = "red", type = "l")
-
-install.packages("pracma")
-library(pracma)
-plot(moving_average, type = "l")
-moving_average<-movavg(time_series, 6, "s")
-lines(moving_average, col = "red", type = "l")
+moving_avg<-ts(moving_average, start=c(2014, 1), end=c(2018, 12), frequency = 12)
+lines(moving_avg, col = "red", type = "l")
 grid()
-lines(time_series, col = "green", type = "l")
 #--------------
 
-####Zadanie 5
+####Zadanie 5####
 getData<-function(name){
   dane<-read.csv(paste0("https://stooq.pl/q/d/l/?s=", name,
                         "&d1=20171001&d2=20181031&i=d"), head =T, sep=",", dec=".")
@@ -96,33 +108,28 @@ qmk<-getData("QMK")
 sgn<-getData("SGN")
 
 #a
+atm_ma<-movavg(atm$Zamkniecie, 12, "s")
+cdr_ma<-movavg(cdr$Zamkniecie, 12, "s")
+
+plot(atm_ma, type = "l")
+plot(cdr_ma, type = "l")
 
 #b
 cor(atm$Zamkniecie, cdr$Zamkniecie)
+cor(atm_ma, cdr_ma)
 #--------------
 
-####Zadanie 6
-install.packages("quantmod")
-library(quantmod)
-
+####Zadanie 6####
 getSymbols(c("^GSPC","FB","^IXIC","AAPL","CSCO"), from="2016-01-02", to="2018-01-02") 
 
-dates_aapl<-index(AAPL)
-months_aapl<-months(index(AAPL))
-year_aapl <- format(index(AAPL),format="%y")
-means_aapl<-aggregate(AAPL.Close~months_aapl+year_aapl, AAPL, mean)
+#a
+aapl_ma<-movavg(AAPL$AAPL.Close, 12, "s")
+csco_ma<-movavg(CSCO$CSCO.Close, 12, "s")
 
-dates_csco<-index(CSCO)
-months_csco<-months(index(CSCO))
-year_csco <- format(index(CSCO),format="%y")
-means_csco<-aggregate(CSCO.Close~months_csco+year_csco, CSCO, mean)
+plot(aapl_ma, type = "l")
+plot(csco_ma, type = "l")
 
-sorted_means_aapl<-means_aapl[order(means_aapl[,2], factor(means_aapl$months_aapl, month.name) ),]
-
-cor(AAPL, CSCO)
-
-
-
-
-
-
+#b
+cor(AAPL$AAPL.Close, CSCO$CSCO.Close)
+cor(aapl_ma, csco_ma)
+#-------------
