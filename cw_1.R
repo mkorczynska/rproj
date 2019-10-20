@@ -1,7 +1,7 @@
 setwd("C://Users/HP ENVY/Documents/R/Projects/rproj")
 setwd("H://R-zaawansowany/lab_R")
 
-####Zadanie 1
+####Zadanie 1####
 market<-read.csv2("market.csv", sep =",", header=T)
 
 #a
@@ -29,6 +29,7 @@ tail(total_ordered, 3)
 #a
 #crime<-read.table(file = 'crim_just_sex.tsv', sep = '\t', header = TRUE)
 crime<-read.csv2(file = "crim_just_sex_1_Data.csv", sep = ',', header = TRUE)
+crime$Value<-as.character(crime$Value)
 any(is.na(crime))
 
 #b
@@ -49,26 +50,36 @@ par(mfcol=c(1,1))
 #-------------
 
 ####Zadanie 3####
-zloto<-read.csv2("zloto.csv", sep =";", header=T, dec = ".")
-length(zloto[,1])
+gold<-read.csv2("zloto.csv", sep =";", header=T, dec = ".")
+length(gold[,1])
 dates_3<-seq(as.Date("2017/02/02"), as.Date("2018/11/20"), length.out = 488)
-zloto[,1]<-dates_3
+gold[,1]<-dates_3
 
-head(zloto)
-tail(zloto, 10)
+head(gold)
+tail(gold, 10)
 
-month<-months(zloto[,1])
-year <- format(zloto[,1],format="%y")
-aggregate(zloto$Zamkniecie~month+year, zloto, mean)
+month<-months(gold[,1])
+year <- format(gold[,1],format="%y")
+aggregate(gold$Zamkniecie~month+year, gold, mean)
 #--------------
 
 ####Zadanie 4
 wig20<-read.csv2("wig20.csv", sep =";", header=T, dec = ".")
-dates_4<-seq(as.Date("2014/01/31"), as.Date("2018/10/31"), by="month")
-wig20[,1]<-dates_4
-wig<-cbind(wig20$Data, wig20$Zamkniecie)
-series<-ts(wig20)
-plot(series)
+
+time_series <- ts(wig20$Zamkniecie, start=c(2014, 1), end=c(2018, 12), frequency=12)
+show(time_series)
+plot(time_series, xlim=c(0,60))
+
+moving_average<-movavg(time_series, 6, "s")
+lines(moving_average, col = "red", type = "l")
+
+install.packages("pracma")
+library(pracma)
+plot(moving_average, type = "l")
+moving_average<-movavg(time_series, 6, "s")
+lines(moving_average, col = "red", type = "l")
+grid()
+lines(time_series, col = "green", type = "l")
 #--------------
 
 ####Zadanie 5
@@ -76,8 +87,18 @@ getData<-function(name){
   dane<-read.csv(paste0("https://stooq.pl/q/d/l/?s=", name,
                         "&d1=20171001&d2=20181031&i=d"), head =T, sep=",", dec=".")
 }
+
+atm<-getData("ATM")
+cdr<-getData("CDR")
+cmr<-getData("CMR")
+elz<-getData("ELZ")
+qmk<-getData("QMK")
+sgn<-getData("SGN")
+
 #a
+
 #b
+cor(atm$Zamkniecie, cdr$Zamkniecie)
 #--------------
 
 ####Zadanie 6
