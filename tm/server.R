@@ -29,6 +29,8 @@ library(cluster)
 library(ape)
 library(cluster)
 library(topicmodels)
+library(ldatuning)
+
 
 
 # Define server logic required to draw a histogram
@@ -154,8 +156,9 @@ shinyServer(function(input, output) {
     
     output$lda<-DT::renderDataTable({
         dtm = DocumentTermMatrix(b_corp)
-        lda_7<<-LDA(dtm, 7)
-        text_topics <- tidy(lda_7, matrix = "beta")
+        num_topics<<-input$topics
+        lda<<-LDA(dtm, num_topics)
+        text_topics <- tidy(lda, matrix = "beta")
         datatable(text_topics)
         text_top_terms <- text_topics %>%
             group_by(topic) %>%
@@ -191,9 +194,9 @@ shinyServer(function(input, output) {
             coord_flip()
     })
     
-    output$plot_lda_2<-renderPlot({
-        topics_7 <- tidy(lda_7, matrix = "beta")
-        topics_7 %>%
+    output$lda_topics<-renderPlot({
+        topics <- tidy(lda, matrix = "beta")
+        topics %>%
             group_by(topic) %>%
             top_n(15, beta) %>%
             ungroup() %>%
@@ -244,6 +247,34 @@ shinyServer(function(input, output) {
         wordcloud_rep(names(v), v, scale=c(4,0.5),
                       min.freq = input$freq, max.words=input$max,
                       colors=brewer.pal(8, "Dark2"))
+    })
+    
+    output$ar_dev<-renderPlot({
+        dtm = DocumentTermMatrix(b_corp)
+        results <- FindTopicsNumber(
+            dtm,
+            topics = seq(from = 2, to = 10, by = 2),
+            metrics = c("Arun2010", "Deveaud2014"),
+            method = "Gibbs",
+            control = list(seed = 77),
+            mc.cores = 3L,
+            verbose = TRUE
+        )
+        FindTopicsNumber_plot(results)
+    })
+    
+    output$grif_cao<-renderPlot({
+        dtm = DocumentTermMatrix(b_corp)
+        results_2 <- FindTopicsNumber(
+            dtm,
+            topics = seq(from = 2, to = 30, by = 3),
+            metrics = c("Griffiths2004", "CaoJuan2009"),
+            method = "Gibbs",
+            control = list(seed = 77),
+            mc.cores = 3L,
+            verbose = TRUE
+        )
+        FindTopicsNumber_plot(results_2)
     })
     
 })
