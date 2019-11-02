@@ -89,3 +89,12 @@ myStats<-function(x, p){
 }
 
 myStats(los, 0)
+
+
+#zadanie 6
+myFun<-function(x){
+  y=10*sin(1.5*x)*cos(0.5*x)+(1/2)*sqrt(abs(x))
+  return(y)
+}
+
+myFun(1)

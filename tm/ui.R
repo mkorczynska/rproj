@@ -32,8 +32,8 @@ library(ldatuning)
 # Define UI for application that draws a histogram
 shinyUI(
     fluidPage(
-        theme = shinytheme("flatly"),
-        navbarPage("Grupowanie tekstow",
+        theme = shinytheme("journal"),
+        navbarPage("Grupowanie tekstów",
                    tabPanel("Korpus teksow",
                             sidebarLayout(
                                 sidebarPanel(
@@ -51,7 +51,6 @@ shinyUI(
                    
                    tabPanel("Podstawowe informacje",
                             navlistPanel(
-                                "Header A",
                                 tabPanel("Liczebnosc wyrazow",
                                          mainPanel(
                                              DT::dataTableOutput("stats")
@@ -64,18 +63,24 @@ shinyUI(
                                                      min = 1,  max = 10, value=5
                                                      ), #end sliderInput
                                          mainPanel(
-                                             DT::dataTableOutput("terms_3")
+                                             DT::dataTableOutput("terms")
                                          )#end mainPanel
                                 ), #end tabPanel
                                 
                                 tabPanel("Czestosc wystepowania wybranego slowa",
                                          textInput("text", 
                                                    label = h3("Text input"), 
-                                                   value = "Enter text..."
+                                                   value = "Wpisz słowo.."
                                                    ), #end textInput
                                          
                                          mainPanel(
                                              plotOutput("term_plot")
+                                         )#end mainPanel
+                                ), #end tabPanel
+                                
+                                tabPanel("Chmura słów",
+                                         mainPanel(
+                                             plotOutput("cloud")
                                          )#end mainPanel
                                 )#end tabPanel
                             )#end navlistPanel
@@ -83,7 +88,12 @@ shinyUI(
                    
                    tabPanel("LDA",
                             navlistPanel(
-                                "Header A",
+                                tabPanel("Arun, Deveaud",
+                                         mainPanel(
+                                             plotOutput("ar_dev"),
+                                             plotOutput("grif_cao")
+                                         )#end mainPanel
+                                ), #end tabPanel
                                 
                                 tabPanel("prawdopodobienstwa dla slow",
                                          sliderInput("topics",
@@ -96,24 +106,25 @@ shinyUI(
                                          )#end mainPanel
                                 ), #end tabPanel
                                 
-                                tabPanel("Arun, Deveaud",
-                                         mainPanel(
-                                             plotOutput("ar_dev")
-                                         )#end mainPanel
-                                ), #end tabPanel
-                                
-                                tabPanel("Griffiths, CaoJuan",
-                                         mainPanel(
-                                             plotOutput("grif_cao")
-                                         )#end mainPanel
-                                ), #end tabPanel
-                                
                                 tabPanel("Wykres tematow",
                                          
                                          mainPanel(
                                              plotOutput("lda_topics")
                                          )#end mainPanel
-                                )
+                                ), #end tabPanel
+                                
+                                tabPanel("Przypisanie",
+                                         
+                                         mainPanel(
+                                             DT::dataTableOutput("przypis")
+                                         )#end mainPanel
+                                ), #end tabPanel
+                                tabPanel("Slowa",
+                                         
+                                         mainPanel(
+                                             DT::dataTableOutput("slowa")
+                                         )#end mainPanel
+                                )#end tabPanel
                             )#end navlistPanel
                    )#end tabPanel
         )#end navbarPage
