@@ -157,4 +157,27 @@ myDane<-function(url){
 tab<-myDane("https://pl.wikipedia.org/wiki/Najwi%C4%99ksze_przedsi%C4%99biorstwa_%C5%9Bwiata")
 tab<-as.data.frame(tab)
 tab<-tab[,-c(1:2)]
-col_names<-tab[1,]
+col_names<-c("miejsce", "nazwa", "branża", "przychód", "rok", "kapitalizacja", "zatrudnienie", "symbol", "siedziba", "prezes")
+colnames(tab)<-col_names
+tab<-tab[-c(1),]
+
+ch<-as.character(tab[,4])
+ch<-gsub(" ","",ch)
+ch<-gsub("\\[\\d+\\]",'',ch)
+ch<-gsub("\\,",'.',ch)
+col_4<-as.numeric(ch)
+
+ch<-as.character(tab[,6])
+ch<-gsub(" ","",ch)
+ch<-gsub("\\[\\d+\\]",'',ch)
+ch<-gsub("\\,",'.',ch)
+col_6<-as.numeric(ch)
+
+ch<-as.character(tab[,7])
+ch<-gsub(" ","",ch)
+ch<-gsub("[$[:punct:]]\\d",'',ch)
+ch<-gsub("[[:punct:]]",'',ch)
+col_7<-as.numeric(ch)
+
+sum(is.na(col_7))
+cols<-cbind(col_4, col_6, col_7)
