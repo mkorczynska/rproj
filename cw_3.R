@@ -51,8 +51,9 @@ system.time(for(i in 2:zakr){
 
 #zadanie 3
 vect_2<-c(1,2,3,4)
-vect_un<-vector(length = length(vect_2))
+
 myNorm<-function(x){
+  vect_un<-vector(length = length(x))
   for(i in 1:length(x)){
     result=(x[i]-mean(x))/(max(x)-min(x))
     vect_un[i]=result
@@ -112,7 +113,7 @@ myStats(los, 0)
 install.packages("rootSolve")
 library(rootSolve)
 myFun=function(x){
-  10*sin(1.5*x)*cos(0.5*x)+(1/2)*sqrt(abs(x))
+  10*sin(1.5*x)*cos(0.5*x^3)+(1/2)*sqrt(abs(x))
 }
 
 #a
@@ -123,7 +124,9 @@ ur55<-uniroot(myFun, c(-5, 5))
 #b
 urs33<-uniroot.all(myFun, c(-3,3))
 
-plot(myFun, from = -5, to=10, type = "l", ylab = "f(x)", main="10*sin(1.5*x)*cos(0.5*x)+(1/2)*sqrt(abs(x))", cex.main=0.75)
+urs44<-uniroot.all(myFun, c(-4,4))
+plot(myFun, from = -4, to=4, type = "l", ylab = "f(x)", main="10*sin(1.5*x)*cos(0.5*x^3)+(1/2)*sqrt(abs(x))", cex.main=0.75)
+points(urs44, y=replicate(21, 0), col="red", pch=19)
 
 #zadanie 7
 myLin<-function(x){
@@ -181,3 +184,9 @@ col_7<-as.numeric(ch)
 
 sum(is.na(col_7))
 cols<-cbind(col_4, col_6, col_7)
+
+cols_omit_na<-na.omit(cols)
+
+cols_omit_na[,1]<-myNorm(cols_omit_na[,1])
+cols_omit_na[,2]<-myNorm(cols_omit_na[,2])
+cols_omit_na[,3]<-myNorm(cols_omit_na[,3])
