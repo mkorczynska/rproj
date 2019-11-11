@@ -172,7 +172,10 @@ shinyServer(function(input, output) {
         num_topics<<-input$topics
         lda<<-LDA(dtm, num_topics)
         ldaOut.topics <- as.matrix(topics(lda))
-        ldaOut.topics
+        corp_df<-data.frame(text = sapply(corp, as.character), stringsAsFactors = FALSE)
+        przypis<-cbind(corp_df, ldaOut.topics)
+        przypis
+        #ldaOut.topics
     })
     
     #zapisanie slow dla poszczegolnych tematow
