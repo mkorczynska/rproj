@@ -32,42 +32,30 @@ library(topicmodels)
 library(ldatuning)
 
 
-
-# Define server logic required to draw a histogram
 shinyServer(function(input, output) {
     
     output$texts <- DT::renderDataTable(DT::datatable({
         
-        # input$file1 will be NULL initially. After the user selects
-        # and uploads a file, head of that data file by default,
-        # or all rows if selected, will be shown.
-        
         req(input$corp_file)
         
-        # when reading semicolon separated files,
-        # having a comma separator causes `read.csv` to error
         tryCatch(
             {
                 load(file=input$corp_file$datapath)
                 corp<<-data.frame(text = sapply(bigcorp, as.character), stringsAsFactors = FALSE)
                 b_corp<<-bigcorp
-                #df<-readRDS(input$file1$datapath)
-                #df<-data.frame(text = sapply(df, as.character), stringsAsFactors = FALSE)
-                
+                dtm<<-DocumentTermMatrix(b_corp)
             },
             error = function(e) {
-                # return a safeError if a parsing error occurs
                 stop(safeError(e))
             }
         )
-        
         return(corp)
         
     }))
     
     #liczebnosc wyrazow
     output$stats <- DT::renderDataTable({
-        term_stats<-term_stats(corp)
+        term_stats<-term_stats(b_corp)
     })
     
     #wyrazenia wielowyrazowe
@@ -78,24 +66,21 @@ shinyServer(function(input, output) {
     #wykres liczebnosci wyrazow w tekstach
     output$term_plot<-renderPlot({
         chunks <- text_split(corp, "tokens", 5000)
-        
         count <- text_count(chunks, input$text)
-        
         i <- seq_along(count)
+        
         plot(i, count, type = "l", xlab = "Tekst",
-             ylab = "Liczba wystapien",
-             main = paste(dQuote(input$text), "- wystepowanie w tekstach"), col = 2)
-        points(i, count, pch = 16, cex = 0.5, col = 2)
+             ylab = "Liczba wystąpień",
+             main = paste(dQuote(input$text), "- występowanie w tekstach"), col = 2)
+        points(i, count, pch = 19, cex = 0.8, col = 2)
     })
     
+    #chmura wyrazow
     output$plot_wordcloud<-renderPlot({
-        dtm = DocumentTermMatrix(b_corp)
-        
         freq <- colSums(as.matrix(dtm))   
         length(freq)   
         ord <- order(freq)   
-        
-        #czestosc slow
+
         freq <- colSums(as.matrix(dtm))
         freq <- sort(colSums(as.matrix(dtm)), decreasing=TRUE)
         
@@ -103,12 +88,11 @@ shinyServer(function(input, output) {
         wordcloud(names(freq), freq, min.freq=50, scale=c(5, .1), colors=brewer.pal(6, "Dark2"))  
     })
     
+    #LDA
     output$lda<-DT::renderDataTable({
-        dtm = DocumentTermMatrix(b_corp)
         num_topics<<-input$topics
         lda<<-LDA(dtm, num_topics)
         text_topics <<- tidy(lda, matrix = "beta")
-        
         
         beta_spread <<- text_topics %>%
             mutate(topic = paste0("topic", topic)) %>%
@@ -119,7 +103,10 @@ shinyServer(function(input, output) {
         datatable(beta_spread)
     })
     
+    #tematy LDA
     output$lda_topics<-renderPlot({
+        num_topics<<-input$topics
+        lda<<-LDA(dtm, num_topics)
         topics <- tidy(lda, matrix = "beta")
         topics %>%
             group_by(topic) %>%
@@ -152,11 +139,11 @@ shinyServer(function(input, output) {
                       colors=brewer.pal(8, "Dark2"))
     })
     
+    #metryki arun, devaud
     output$ar_dev<-renderPlot({
-        dtm = DocumentTermMatrix(b_corp)
         results <- FindTopicsNumber(
             dtm,
-            topics = seq(from = 2, to = 10, by = 2),
+            topics = seq(from = 2, to = 20, by = 2),
             metrics = c("Arun2010", "Deveaud2014"),
             method = "Gibbs",
             control = list(seed = 77),
@@ -166,11 +153,11 @@ shinyServer(function(input, output) {
         FindTopicsNumber_plot(results)
     })
     
+    #metryki griffiths, caojuan
     output$grif_cao<-renderPlot({
-        dtm = DocumentTermMatrix(b_corp)
         results_2 <- FindTopicsNumber(
             dtm,
-            topics = seq(from = 2, to = 30, by = 3),
+            topics = seq(from = 2, to = 20, by = 2),
             metrics = c("Griffiths2004", "CaoJuan2009"),
             method = "Gibbs",
             control = list(seed = 77),
@@ -180,14 +167,20 @@ shinyServer(function(input, output) {
         FindTopicsNumber_plot(results_2)
     })
     
+    #teksty i tematy
     output$przypis<-DT::renderDataTable({
+        num_topics<<-input$topics
+        lda<<-LDA(dtm, num_topics)
         ldaOut.topics <- as.matrix(topics(lda))
         ldaOut.topics
     })
     
-    output$slowa<-DT::renderDataTable({
-        #zapisanie slow dla poszczegolnych tematow
-        ldaOut.terms <- as.matrix(terms(lda, 10))
+    #zapisanie slow dla poszczegolnych tematow
+    output$slowa<-renderTable({
+        num_topics<<-input$topics
+        lda<<-LDA(dtm, num_topics)
+        num_words<<-input$words
+        ldaOut.terms <- as.matrix(terms(lda, num_words))
         ldaOut.terms
     })
     

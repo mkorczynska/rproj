@@ -32,13 +32,21 @@ library(ldatuning)
 # Define UI for application that draws a histogram
 shinyUI(
     fluidPage(
-        theme = shinytheme("journal"),
+        tags$head(tags$style(
+            HTML(
+                'body, label, input, button, select { 
+                    font-size: 18px;
+                }'
+                )
+            )
+        ),
+        theme = shinytheme("paper"),
         navbarPage("Grupowanie tekstów",
-                   tabPanel("Korpus teksow",
+                   tabPanel("Korpus tekstów",
                             sidebarLayout(
-                                sidebarPanel(
+                                sidebarPanel(id="sidebar",
                                     fileInput("corp_file", 
-                                              "Wybierz plik korpusu",
+                                              "Wybierz plik korpusu tekstów (z rozszerzeniem .rda)",
                                               multiple=FALSE
                                     )#end fileInput
                                 ), #end sidebarPanel
@@ -51,15 +59,15 @@ shinyUI(
                    
                    tabPanel("Podstawowe informacje",
                             navlistPanel(
-                                tabPanel("Liczebnosc wyrazow",
+                                tabPanel("Liczebność wyrazów",
                                          mainPanel(
                                              DT::dataTableOutput("stats")
                                          )#end mainPanel
                                 ), #end tabPanel
                                 
-                                tabPanel("Liczebnosc wyrazen kilkuwyrazowych",
+                                tabPanel("Liczebność wyrażen kilkuwyrazowych",
                                          sliderInput("number",
-                                                     "liczba slow w wyrazeniu:",
+                                                     "Liczba słów w wyrażeniu:",
                                                      min = 1,  max = 10, value=5
                                                      ), #end sliderInput
                                          mainPanel(
@@ -67,14 +75,14 @@ shinyUI(
                                          )#end mainPanel
                                 ), #end tabPanel
                                 
-                                tabPanel("Czestosc wystepowania wybranego slowa",
+                                tabPanel("Częstość wystepowania wybranego słowa",
                                          textInput("text", 
-                                                   label = h3("Text input"), 
-                                                   value = "Wpisz słowo.."
+                                                   label = h3("Podaj słowo"), 
+                                                   value = "..."
                                                    ), #end textInput
                                          
                                          mainPanel(
-                                             plotOutput("term_plot")
+                                             plotOutput("term_plot", width = "150%", height = "800px")
                                          )#end mainPanel
                                 ), #end tabPanel
                                 
@@ -88,17 +96,17 @@ shinyUI(
                    
                    tabPanel("LDA",
                             navlistPanel(
-                                tabPanel("Arun, Deveaud",
+                                tabPanel("Metryki",
                                          mainPanel(
-                                             plotOutput("ar_dev"),
-                                             plotOutput("grif_cao")
+                                             plotOutput("ar_dev", width = "150%", height = "800px"),
+                                             plotOutput("grif_cao", width = "150%", height = "800px")
                                          )#end mainPanel
                                 ), #end tabPanel
                                 
-                                tabPanel("prawdopodobienstwa dla slow",
+                                tabPanel("Prawdopodobieństwa przynależności dla słów",
                                          sliderInput("topics",
-                                                     "liczba tematow:",
-                                                     min = 1,  max = 10, value=2
+                                                     "Liczba tematów:",
+                                                     min = 1,  max = 20, value=2
                                          ), #end sliderInput
                                          
                                          mainPanel(
@@ -106,10 +114,10 @@ shinyUI(
                                          )#end mainPanel
                                 ), #end tabPanel
                                 
-                                tabPanel("Wykres tematow",
+                                tabPanel("Wykres tematów",
                                          
                                          mainPanel(
-                                             plotOutput("lda_topics")
+                                             plotOutput("lda_topics", width = "150%", height = "800px")
                                          )#end mainPanel
                                 ), #end tabPanel
                                 
@@ -119,10 +127,14 @@ shinyUI(
                                              DT::dataTableOutput("przypis")
                                          )#end mainPanel
                                 ), #end tabPanel
-                                tabPanel("Slowa",
+                                tabPanel("Słowa",
+                                         sliderInput("words",
+                                                     "Liczba słów:",
+                                                     min = 1,  max = 20, value=2
+                                         ), #end sliderInput
                                          
                                          mainPanel(
-                                             DT::dataTableOutput("slowa")
+                                             tableOutput("slowa")
                                          )#end mainPanel
                                 )#end tabPanel
                             )#end navlistPanel
