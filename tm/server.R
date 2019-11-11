@@ -1,52 +1,26 @@
-#
-# This is the server logic of a Shiny web application. You can run the
-# application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
 options(shiny.maxRequestSize = 30*1024^2)
 library(shiny)
 library(shinythemes)
 library(DT)
 library(ggplot2)
-library(scales)
-library(RSelenium)
-library(rvest)
-library(dplyr)
-library(tidyr)
-library(purrr)
-library(readr)
-library(tidytext)
 library(tm)
 library(corpus)
-library(shinydashboard)
-library(RColorBrewer)
-library(wordcloud)
-library(cluster)
-library(ape)
-library(cluster)
 library(topicmodels)
+library(tidytext)
 library(ldatuning)
 
-
 shinyServer(function(input, output) {
-    
     output$texts <- DT::renderDataTable(DT::datatable({
-        
         req(input$corp_file)
         
-        tryCatch(
-            {
-                load(file=input$corp_file$datapath)
-                corp<<-data.frame(text = sapply(bigcorp, as.character), stringsAsFactors = FALSE)
-                b_corp<<-bigcorp
-                dtm<<-DocumentTermMatrix(b_corp)
-            },
-            error = function(e) {
-                stop(safeError(e))
+        tryCatch({
+            load(file=input$corp_file$datapath)
+            corp<<-data.frame(text = sapply(bigcorp, as.character), stringsAsFactors = FALSE)
+            b_corp<<-bigcorp
+            dtm<<-DocumentTermMatrix(b_corp) #tm
+        },
+        error = function(e){
+            stop(safeError(e))
             }
         )
         return(corp)
@@ -55,7 +29,7 @@ shinyServer(function(input, output) {
     
     #liczebnosc wyrazow
     output$stats <- DT::renderDataTable({
-        term_stats<-term_stats(b_corp)
+        term_stats<-term_stats(b_corp) #corpus
     })
     
     #wyrazenia wielowyrazowe
@@ -65,8 +39,8 @@ shinyServer(function(input, output) {
     
     #wykres liczebnosci wyrazow w tekstach
     output$term_plot<-renderPlot({
-        chunks <- text_split(corp, "tokens", 5000)
-        count <- text_count(chunks, input$text)
+        chunks <- text_split(corp, "tokens", 5000) #corpus
+        count <- text_count(chunks, input$text) #corpus
         i <- seq_along(count)
         
         plot(i, count, type = "l", xlab = "Tekst",
@@ -75,24 +49,11 @@ shinyServer(function(input, output) {
         points(i, count, pch = 19, cex = 0.8, col = 2)
     })
     
-    #chmura wyrazow
-    output$plot_wordcloud<-renderPlot({
-        freq <- colSums(as.matrix(dtm))   
-        length(freq)   
-        ord <- order(freq)   
-
-        freq <- colSums(as.matrix(dtm))
-        freq <- sort(colSums(as.matrix(dtm)), decreasing=TRUE)
-        
-        set.seed(20)   
-        wordcloud(names(freq), freq, min.freq=50, scale=c(5, .1), colors=brewer.pal(6, "Dark2"))  
-    })
-    
     #LDA
     output$lda<-DT::renderDataTable({
         num_topics<<-input$topics
-        lda<<-LDA(dtm, num_topics)
-        text_topics <<- tidy(lda, matrix = "beta")
+        lda<<-LDA(dtm, num_topics) #topicmodels
+        text_topics <<- tidy(lda, matrix = "beta") #tidytext
         
         beta_spread <<- text_topics %>%
             mutate(topic = paste0("topic", topic)) %>%
@@ -120,28 +81,9 @@ shinyServer(function(input, output) {
             coord_flip()
     })
     
-    output$cloud <- renderPlot({
-        wordcloud_rep <- repeatable(wordcloud)
-        dtm = DocumentTermMatrix(b_corp)
-        
-        freq <- colSums(as.matrix(dtm))   
-        length(freq)   
-        ord <- order(freq)   
-        
-        #czestosc slow
-        freq <- colSums(as.matrix(dtm))
-        freq <- sort(colSums(as.matrix(dtm)), decreasing=TRUE)
-        
-        set.seed(20) 
-        v <- freq
-        wordcloud_rep(names(v), v, scale=c(4,0.5),
-                      min.freq = input$freq, max.words=input$max,
-                      colors=brewer.pal(8, "Dark2"))
-    })
-    
     #metryki arun, devaud
     output$ar_dev<-renderPlot({
-        results <- FindTopicsNumber(
+        results <- FindTopicsNumber( #ldatuning
             dtm,
             topics = seq(from = 2, to = 20, by = 2),
             metrics = c("Arun2010", "Deveaud2014"),
@@ -150,7 +92,7 @@ shinyServer(function(input, output) {
             mc.cores = 3L,
             verbose = TRUE
         )
-        FindTopicsNumber_plot(results)
+        FindTopicsNumber_plot(results) #ldatuning
     })
     
     #metryki griffiths, caojuan
@@ -168,18 +110,17 @@ shinyServer(function(input, output) {
     })
     
     #teksty i tematy
-    output$przypis<-DT::renderDataTable({
+    output$texts_groups<-DT::renderDataTable({
         num_topics<<-input$topics
         lda<<-LDA(dtm, num_topics)
         ldaOut.topics <- as.matrix(topics(lda))
         corp_df<-data.frame(text = sapply(corp, as.character), stringsAsFactors = FALSE)
-        przypis<-cbind(corp_df, ldaOut.topics)
-        przypis
-        #ldaOut.topics
+        texts_groups<-cbind(corp_df, ldaOut.topics)
+        texts_groups
     })
     
     #zapisanie slow dla poszczegolnych tematow
-    output$slowa<-renderTable({
+    output$words_in_topics<-renderTable({
         num_topics<<-input$topics
         lda<<-LDA(dtm, num_topics)
         num_words<<-input$words
@@ -188,4 +129,3 @@ shinyServer(function(input, output) {
     })
     
 })
-

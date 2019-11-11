@@ -1,24 +1,3 @@
-library(shiny)
-library(shinythemes)
-library(ggplot2)
-library(scales)
-library(RSelenium)
-library(rvest)
-library(dplyr)
-library(tidyr)
-library(purrr)
-library(readr)
-library(tm)
-library(corpus)
-library(shinydashboard)
-library(RColorBrewer)
-library(wordcloud)
-library(cluster)
-library(ape)
-library(cluster)
-library(topicmodels)
-library(ldatuning)
-
 shinyUI(
     fluidPage(
         tags$head(tags$style(
@@ -73,12 +52,6 @@ shinyUI(
                                          mainPanel(
                                              plotOutput("term_plot", width = "150%", height = "800px")
                                          )#end mainPanel
-                                ), #end tabPanel
-                                
-                                tabPanel("Chmura słów",
-                                         mainPanel(
-                                             plotOutput("cloud")
-                                         )#end mainPanel
                                 )#end tabPanel
                             )#end navlistPanel
                    ), #end tabPanel
@@ -113,7 +86,7 @@ shinyUI(
                                 tabPanel("Przypisanie",
                                          
                                          mainPanel(
-                                             DT::dataTableOutput("przypis")
+                                             DT::dataTableOutput("texts_groups")
                                          )#end mainPanel
                                 ), #end tabPanel
                                 tabPanel("Słowa",
@@ -123,7 +96,7 @@ shinyUI(
                                          ), #end sliderInput
                                          
                                          mainPanel(
-                                             tableOutput("slowa")
+                                             tableOutput("words_in_topics")
                                          )#end mainPanel
                                 )#end tabPanel
                             )#end navlistPanel
