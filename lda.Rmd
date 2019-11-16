@@ -7,44 +7,192 @@ output: ioslides_presentation
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+getwd()
 ```
 
 ## LDA
 
 LDA (*ang. Latent Dirichlet Allocation*) - metoda służąca wyodrębnianiu tematów ze
-zbioru tekstów. 
-Wykorzystuje ona założenie, że każdy dokument może zostać opisany jako
-pewien rozkład tematów, a każdy temat jako rozkład słów. Istotą metody jest postrzeganie poszczególnych tekstów jako mieszaniny tematów.
+zbioru tekstów.  
+- Wykorzystuje ona założenie, że każdy dokument może zostać opisany jako
+pewien <font color="Green"> rozkład tematów </font>, a każdy temat jako <font color="Green">rozkład słów</font>.   
+- Istotą metody jest postrzeganie poszczególnych tekstów jako mieszaniny tematów.
 
 Więcej: [How does LDA works](https://medium.com/@lettier/how-does-lda-work-ill-explain-using-emoji-108abf40fa7d)
 
 ## Biblioteki
 
 - tm - <https://cran.r-project.org/web/packages/tm/tm.pdf>
-- corpus
-- topicmodels
-- tidytext
-- ldatuning
+- corpus - <https://cran.r-project.org/web/packages/corpus/corpus.pdf>
+- topicmodels - <https://cran.r-project.org/web/packages/topicmodels/topicmodels.pdf>
+- tidytext - <https://cran.r-project.org/web/packages/tidytext/tidytext.pdf>
+- ldatuning - <https://cran.r-project.org/web/packages/ldatuning/ldatuning.pdf>
 
 ## Wczytanie korpusu tekstów
 
-Przyjmuje się założenie, że
-każdy element należący do korpusu tekstów nie dotyczy jednego, ale wielu zagadnień stąd
+```{r, echo=T, eval=F}
+output$texts <- DT::renderDataTable(DT::datatable({
+        req(input$corp_file)
+        
+        tryCatch({
+            load(file=input$corp_file$datapath)
+            corp<<-data.frame(text = sapply(bigcorp, as.character), 
+                              stringsAsFactors = FALSE)
+            b_corp<<-bigcorp
+            dtm<<-DocumentTermMatrix(b_corp) #tm
+        },
+        error = function(e){
+            stop(safeError(e))
+            }
+        )
+        return(corp)
+        
+    }))
+```
+
+## Wczytanie korpusu tekstów
+
+![](korpus.jpg)
+
+
+## Podstawowe informacje - liczebność wyrazów
+```{r, echo=T, eval=F}
+#liczebnosc wyrazow
+    output$stats <- DT::renderDataTable({
+        term_stats<-term_stats(b_corp) #corpus
+    })
+```
+
+## Podstawowe informacje - wyrażenia wielowyrazowe
+```{r, echo=T, eval=F}
+#wyrazenia wielowyrazowe
+    output$terms<-DT::renderDataTable({
+        terms<-term_stats(corp, ngrams = input$number, types = TRUE)
+    })
+```
+
+## Podstawowe informacje - liczebność wyrazów w tekstach
+```{r, echo=T, eval=F}
+#wykres liczebnosci wyrazow w tekstach
+    output$term_plot<-renderPlot({
+        chunks <- text_split(corp, "tokens", 5000) #corpus
+        count <- text_count(chunks, input$text) #corpus
+        i <- seq_along(count)
+        
+        plot(i, count, type = "l", xlab = "Tekst",
+             ylab = "Liczba wystąpień",
+             main = paste(dQuote(input$text), 
+                          "- występowanie w tekstach"), col = 2)
+        points(i, count, pch = 19, cex = 0.8, col = 2)
+    })
+```
+
+## Wybór liczby tematów - metryki
+
+Przyjmuje się założenie, że każdy element należący do korpusu tekstów nie dotyczy jednego, ale wielu zagadnień stąd
 też kluczową kwestią w przypadku LDA jest wybór liczby tematów.
 
-- Bullet 1
-- Bullet 2
-- Bullet 3
+- Arun,
+- Deveaud,
+- Griffiths,
+- CaoJuan.
 
-## Slide with R Output
+## Arun, Devaud
 
-```{r cars, echo = TRUE}
-summary(cars)
+```{r, echo = T, eval=F}
+#metryki Arun, Deveaud
+    output$ar_dev<-renderPlot({
+        results <- FindTopicsNumber( #ldatuning
+            dtm,
+            topics = seq(from = 2, to = 20, by = 2),
+            metrics = c("Arun2010", "Deveaud2014"),
+            method = "Gibbs",
+            control = list(seed = 77),
+            mc.cores = 3L,
+            verbose = TRUE
+        )
+        FindTopicsNumber_plot(results) #ldatuning
+    })
 ```
 
-## Slide with Plot
+## Griffiths, CaoJuan
 
-```{r pressure}
-plot(pressure)
+```{r, echo = T, eval=F}
+#metryki Griffiths, Caojuan
+    output$grif_cao<-renderPlot({
+        results_2 <- FindTopicsNumber(
+            dtm,
+            topics = seq(from = 2, to = 20, by = 2),
+            metrics = c("Griffiths2004", "CaoJuan2009"),
+            method = "Gibbs",
+            control = list(seed = 77),
+            mc.cores = 3L,
+            verbose = TRUE
+        )
+        FindTopicsNumber_plot(results_2)
+    })
 ```
 
+## Prawdopodobieństwa przynależności słów do tematów
+```{r, echo = T, eval=F}
+    #LDA
+    output$lda<-DT::renderDataTable({
+        num_topics<<-input$topics
+        lda<<-LDA(dtm, num_topics) #topicmodels
+        text_topics <<- tidy(lda, matrix = "beta") #tidytext
+        
+        beta_spread <<- text_topics %>%
+            mutate(topic = paste0("topic", topic)) %>%
+            spread(topic, beta) %>%
+            filter(topic1 > .001 | topic2 > .001) %>%
+            mutate(log_ratio = log2(topic2 / topic1))
+        
+        datatable(beta_spread)
+    })
+```
+
+## Tematy
+```{r, echo = T, eval=F}
+#tematy LDA
+    output$lda_topics<-renderPlot({
+        num_topics<<-input$topics
+        lda<<-LDA(dtm, num_topics)
+        topics <- tidy(lda, matrix = "beta")
+        topics %>%
+            group_by(topic) %>%
+            top_n(15, beta) %>%
+            ungroup() %>%
+            arrange(beta) %>%
+            mutate(term = factor(term, levels = unique(term))) %>%
+            ggplot() +
+            geom_col(aes(term, beta, fill = factor(topic)), color = "gray50", show.legend = FALSE) +
+            facet_wrap(~topic, scales = "free_y") +
+            coord_flip()
+    })
+```
+
+## Teksty w tematach
+```{r, echo = T, eval=F}
+    #teksty i tematy
+    output$texts_groups<-DT::renderDataTable({
+        num_topics<<-input$topics
+        lda<<-LDA(dtm, num_topics)
+        ldaOut.topics <- as.matrix(topics(lda))
+        corp_df<-data.frame(text = sapply(corp, as.character), 
+                            stringsAsFactors = FALSE)
+        texts_groups<-cbind(corp_df, ldaOut.topics)
+        texts_groups
+    })
+```
+
+## Słowa w tematach
+```{r, echo = T, eval=F}
+    #zapisanie slow dla poszczegolnych tematow
+    output$words_in_topics<-renderTable({
+        num_topics<<-input$topics
+        lda<<-LDA(dtm, num_topics)
+        num_words<<-input$words
+        ldaOut.terms <- as.matrix(terms(lda, num_words))
+        ldaOut.terms
+    })
+```

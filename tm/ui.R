@@ -1,3 +1,15 @@
+library(shiny)
+library(shinythemes)
+library(dplyr)
+library(tidyr)
+library(DT)
+library(ggplot2)
+library(tm)
+library(corpus)
+library(topicmodels)
+library(tidytext)
+library(ldatuning)
+
 shinyUI(
     fluidPage(
         tags$head(tags$style(

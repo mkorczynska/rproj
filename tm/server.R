@@ -1,6 +1,8 @@
 options(shiny.maxRequestSize = 30*1024^2)
 library(shiny)
 library(shinythemes)
+library(dplyr)
+library(tidyr)
 library(DT)
 library(ggplot2)
 library(tm)
@@ -81,7 +83,7 @@ shinyServer(function(input, output) {
             coord_flip()
     })
     
-    #metryki arun, devaud
+    #metryki Arun, Deveaud
     output$ar_dev<-renderPlot({
         results <- FindTopicsNumber( #ldatuning
             dtm,
@@ -95,7 +97,7 @@ shinyServer(function(input, output) {
         FindTopicsNumber_plot(results) #ldatuning
     })
     
-    #metryki griffiths, caojuan
+    #metryki Griffiths, Caojuan
     output$grif_cao<-renderPlot({
         results_2 <- FindTopicsNumber(
             dtm,
