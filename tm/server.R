@@ -51,6 +51,34 @@ shinyServer(function(input, output) {
         points(i, count, pch = 19, cex = 0.8, col = 2)
     })
     
+    #metryki Arun, Deveaud
+    output$ar_dev<-renderPlot({
+        results <- FindTopicsNumber( #ldatuning
+            dtm,
+            topics = seq(from = 2, to = 20, by = 2),
+            metrics = c("Arun2010", "Deveaud2014"),
+            method = "Gibbs",
+            control = list(seed = 77),
+            mc.cores = 3L,
+            verbose = TRUE
+        )
+        FindTopicsNumber_plot(results) #ldatuning
+    })
+    
+    #metryki Griffiths, Caojuan
+    output$grif_cao<-renderPlot({
+        results_2 <- FindTopicsNumber(
+            dtm,
+            topics = seq(from = 2, to = 20, by = 2),
+            metrics = c("Griffiths2004", "CaoJuan2009"),
+            method = "Gibbs",
+            control = list(seed = 77),
+            mc.cores = 3L,
+            verbose = TRUE
+        )
+        FindTopicsNumber_plot(results_2)
+    })
+    
     #LDA
     output$lda<-DT::renderDataTable({
         num_topics<<-input$topics
@@ -81,34 +109,6 @@ shinyServer(function(input, output) {
             geom_col(aes(term, beta, fill = factor(topic)), color = "gray50", show.legend = FALSE) +
             facet_wrap(~topic, scales = "free_y") +
             coord_flip()
-    })
-    
-    #metryki Arun, Deveaud
-    output$ar_dev<-renderPlot({
-        results <- FindTopicsNumber( #ldatuning
-            dtm,
-            topics = seq(from = 2, to = 20, by = 2),
-            metrics = c("Arun2010", "Deveaud2014"),
-            method = "Gibbs",
-            control = list(seed = 77),
-            mc.cores = 3L,
-            verbose = TRUE
-        )
-        FindTopicsNumber_plot(results) #ldatuning
-    })
-    
-    #metryki Griffiths, Caojuan
-    output$grif_cao<-renderPlot({
-        results_2 <- FindTopicsNumber(
-            dtm,
-            topics = seq(from = 2, to = 20, by = 2),
-            metrics = c("Griffiths2004", "CaoJuan2009"),
-            method = "Gibbs",
-            control = list(seed = 77),
-            mc.cores = 3L,
-            verbose = TRUE
-        )
-        FindTopicsNumber_plot(results_2)
     })
     
     #teksty i tematy

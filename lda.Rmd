@@ -2,7 +2,11 @@
 title: "LDA"
 subtitle: "Latent Dirichlet Allocation"
 date: "listopad 2019"
-output: ioslides_presentation
+output: 
+    ioslides_presentation:
+        css: style.css
+        widescreen: TRUE
+        transition: slower
 ---
 
 ```{r setup, include=FALSE}
@@ -12,21 +16,43 @@ getwd()
 
 ## LDA
 
-LDA (*ang. Latent Dirichlet Allocation*) - metoda służąca wyodrębnianiu tematów ze
+**LDA** (*ang. Latent Dirichlet Allocation*) - metoda służąca wyodrębnianiu tematów ze
 zbioru tekstów.  
+  
 - Wykorzystuje ona założenie, że każdy dokument może zostać opisany jako
 pewien <font color="Green"> rozkład tematów </font>, a każdy temat jako <font color="Green">rozkład słów</font>.   
-- Istotą metody jest postrzeganie poszczególnych tekstów jako mieszaniny tematów.
+- Istotą metody jest postrzeganie poszczególnych tekstów jako <font color="DarkRed">mieszaniny tematów</font>.
 
 Więcej: [How does LDA works](https://medium.com/@lettier/how-does-lda-work-ill-explain-using-emoji-108abf40fa7d)
 
 ## Biblioteki
 
-- tm - <https://cran.r-project.org/web/packages/tm/tm.pdf>
-- corpus - <https://cran.r-project.org/web/packages/corpus/corpus.pdf>
-- topicmodels - <https://cran.r-project.org/web/packages/topicmodels/topicmodels.pdf>
-- tidytext - <https://cran.r-project.org/web/packages/tidytext/tidytext.pdf>
-- ldatuning - <https://cran.r-project.org/web/packages/ldatuning/ldatuning.pdf>
+- **tm** - <https://cran.r-project.org/web/packages/tm/tm.pdf>  
+- **corpus** - <https://cran.r-project.org/web/packages/corpus/corpus.pdf>  
+- **topicmodels** - <https://cran.r-project.org/web/packages/topicmodels/topicmodels.pdf>  
+- **tidytext** - <https://cran.r-project.org/web/packages/tidytext/tidytext.pdf>  
+- **ldatuning** - <https://cran.r-project.org/web/packages/ldatuning/ldatuning.pdf>  
+
+## Korpus tekstów
+
+<blockquote>„Podzbiór tekstów zorganizowany w taki sposób, by umożliwić sprawne wydobywanie i
+weryfikowanie informacji na temat dowolnego dobrze określonego podzbioru języka”  
+
+~E. Hajnicz, *Najbardziej znane korpusy tekstów. Opracowanie przeglądowe*, Warszawa 2011, s. 4.
+</blockquote>
+
+
+## Macierz dokument- term
+
+<blockquote>
+Reprezentacja częstości występowania słów w poszczególnych
+tekstach. Macierz ta zawiera informacje na temat tego, 
+ile razy konkretne słowo pojawiło się w danym tekście.
+</blockquote>
+
+Informacje o przykładowej macierzy dokument-term:  
+
+![](dtm.jpg)
 
 ## Wczytanie korpusu tekstów
 
@@ -46,7 +72,6 @@ output$texts <- DT::renderDataTable(DT::datatable({
             }
         )
         return(corp)
-        
     }))
 ```
 
@@ -63,6 +88,10 @@ output$texts <- DT::renderDataTable(DT::datatable({
     })
 ```
 
+## Podstawowe informacje - liczebność wyrazów
+![](liczebnosc_wyrazow.jpg)
+
+
 ## Podstawowe informacje - wyrażenia wielowyrazowe
 ```{r, echo=T, eval=F}
 #wyrazenia wielowyrazowe
@@ -71,7 +100,10 @@ output$texts <- DT::renderDataTable(DT::datatable({
     })
 ```
 
-## Podstawowe informacje - liczebność wyrazów w tekstach
+## Podstawowe informacje - wyrażenia wielowyrazowe
+![](wyrazenia.jpg)
+
+## Podstawowe informacje - wystąpienia wyrazów w tekstach
 ```{r, echo=T, eval=F}
 #wykres liczebnosci wyrazow w tekstach
     output$term_plot<-renderPlot({
@@ -86,6 +118,9 @@ output$texts <- DT::renderDataTable(DT::datatable({
         points(i, count, pch = 19, cex = 0.8, col = 2)
     })
 ```
+
+## Podstawowe informacje - wystąpienia wyrazów w tekstach
+![](wystapienia.jpg)
 
 ## Wybór liczby tematów - metryki
 
@@ -151,6 +186,9 @@ też kluczową kwestią w przypadku LDA jest wybór liczby tematów.
     })
 ```
 
+## Prawdopodobieństwa przynależności słów do tematów
+![](prawdopodobienstwa.jpg)
+
 ## Tematy
 ```{r, echo = T, eval=F}
 #tematy LDA
@@ -165,11 +203,15 @@ też kluczową kwestią w przypadku LDA jest wybór liczby tematów.
             arrange(beta) %>%
             mutate(term = factor(term, levels = unique(term))) %>%
             ggplot() +
-            geom_col(aes(term, beta, fill = factor(topic)), color = "gray50", show.legend = FALSE) +
+            geom_col(aes(term, beta, fill = factor(topic)), 
+                     color = "gray50", show.legend = FALSE) +
             facet_wrap(~topic, scales = "free_y") +
             coord_flip()
     })
 ```
+
+## Tematy
+![](wykres_tematow.jpg)
 
 ## Teksty w tematach
 ```{r, echo = T, eval=F}
@@ -196,3 +238,6 @@ też kluczową kwestią w przypadku LDA jest wybór liczby tematów.
         ldaOut.terms
     })
 ```
+
+## Słowa w tematach
+![](slowa_w_tematach.jpg)
