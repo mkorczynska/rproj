@@ -87,9 +87,7 @@ shinyServer(function(input, output) {
         
         beta_spread <<- text_topics %>%
             mutate(topic = paste0("topic", topic)) %>%
-            spread(topic, beta) %>%
-            filter(topic1 > .001 | topic2 > .001) %>%
-            mutate(log_ratio = log2(topic2 / topic1))
+            spread(topic, beta)
         
         datatable(beta_spread)
     })
@@ -97,7 +95,6 @@ shinyServer(function(input, output) {
     #tematy LDA
     output$lda_topics<-renderPlot({
         num_topics<<-input$topics
-        lda<<-LDA(dtm, num_topics)
         topics <- tidy(lda, matrix = "beta")
         topics %>%
             group_by(topic) %>%
@@ -114,7 +111,6 @@ shinyServer(function(input, output) {
     #teksty i tematy
     output$texts_groups<-DT::renderDataTable({
         num_topics<<-input$topics
-        lda<<-LDA(dtm, num_topics)
         ldaOut.topics <- as.matrix(topics(lda))
         corp_df<-data.frame(text = sapply(corp, as.character), stringsAsFactors = FALSE)
         texts_groups<-cbind(corp_df, ldaOut.topics)
@@ -124,7 +120,6 @@ shinyServer(function(input, output) {
     #zapisanie slow dla poszczegolnych tematow
     output$words_in_topics<-renderTable({
         num_topics<<-input$topics
-        lda<<-LDA(dtm, num_topics)
         num_words<<-input$words
         ldaOut.terms <- as.matrix(terms(lda, num_words))
         ldaOut.terms

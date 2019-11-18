@@ -126,6 +126,7 @@ output$texts <- DT::renderDataTable(DT::datatable({
 
 Przyjmuje się założenie, że każdy element należący do korpusu tekstów nie dotyczy jednego, ale wielu zagadnień stąd
 też kluczową kwestią w przypadku LDA jest wybór liczby tematów.
+Pomocne są metryki:
 
 - Arun,
 - Deveaud,
@@ -179,8 +180,7 @@ też kluczową kwestią w przypadku LDA jest wybór liczby tematów.
         beta_spread <<- text_topics %>%
             mutate(topic = paste0("topic", topic)) %>%
             spread(topic, beta) %>%
-            filter(topic1 > .001 | topic2 > .001) %>%
-            mutate(log_ratio = log2(topic2 / topic1))
+            filter(topic1 > .001 | topic2 > .001)
         
         datatable(beta_spread)
     })
@@ -194,7 +194,6 @@ też kluczową kwestią w przypadku LDA jest wybór liczby tematów.
 #tematy LDA
     output$lda_topics<-renderPlot({
         num_topics<<-input$topics
-        lda<<-LDA(dtm, num_topics)
         topics <- tidy(lda, matrix = "beta")
         topics %>%
             group_by(topic) %>%
@@ -218,7 +217,6 @@ też kluczową kwestią w przypadku LDA jest wybór liczby tematów.
     #teksty i tematy
     output$texts_groups<-DT::renderDataTable({
         num_topics<<-input$topics
-        lda<<-LDA(dtm, num_topics)
         ldaOut.topics <- as.matrix(topics(lda))
         corp_df<-data.frame(text = sapply(corp, as.character), 
                             stringsAsFactors = FALSE)
@@ -232,7 +230,6 @@ też kluczową kwestią w przypadku LDA jest wybór liczby tematów.
     #zapisanie slow dla poszczegolnych tematow
     output$words_in_topics<-renderTable({
         num_topics<<-input$topics
-        lda<<-LDA(dtm, num_topics)
         num_words<<-input$words
         ldaOut.terms <- as.matrix(terms(lda, num_words))
         ldaOut.terms
