@@ -7,9 +7,9 @@ library(shinythemes)
 
 shinyUI(
     fluidPage(
-        theme = shinytheme("flatly"),
-        navbarPage("Przelaczniki",
-                   tabPanel("Ladowanie danych",
+        theme = shinytheme("paper"),
+        navbarPage("Modele przełącznikowe",
+                   tabPanel("Ładowanie danych",
                             sidebarLayout(
                                 sidebarPanel(
                                     # Input: Select a file ----
@@ -84,6 +84,8 @@ shinyUI(
                                     # Input: Select a dataset ----
                                     selectInput("typmodelu", "Wybierz typ modelu:",
                                                 choices = c("statyczny", "dynamiczny")),
+                                    selectInput("typoptymalizacji", "Wybierz metodę optymalizacji:",
+                                                choices = c("Nelder-Mead", "BFGS")),
                                     numericInput("num", label = "Numeric input", value = 0.01),
                                     numericInput("num", label = "Numeric input", value = 0.01)
                                 ),
