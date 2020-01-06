@@ -1,105 +1,129 @@
-# ui.R based on RStudio's stockVis app, Shiny lesson 6, here: http://shiny.rstudio.com/tutorial/lesson6/ 
-
 library(shiny)
 library(dygraphs)
 library(dplyr)
 library(shinythemes)
+library(ggplot2)
+library(tidyr)
 
 shinyUI(
     fluidPage(
-        theme = shinytheme("paper"),
+        theme = shinytheme("cosmo"),
         navbarPage("Modele przełącznikowe",
-                   tabPanel("Ładowanie danych",
+                   tabPanel("Dane 1",
                             sidebarLayout(
                                 sidebarPanel(
-                                    # Input: Select a file ----
                                     fileInput("file1", "Wybierz plik CSV",
                                               multiple = FALSE,
                                               accept = c("text/csv",
                                                          "text/comma-separated-values,text/plain",
                                                          ".csv")),
-                                    
-                                    # Horizontal line ----
                                     tags$hr(),
-                                    
-                                    # Input: Checkbox if file has header ----
-                                    checkboxInput("header", "Header", TRUE),
-                                    
-                                    # Input: Select separator ----
-                                    radioButtons("sep", "Separator",
-                                                 choices = c(Comma = ",",
-                                                             Semicolon = ";",
-                                                             Tab = "\t"),
+                                    checkboxInput("header1", "Nagłówek", TRUE),
+                                    radioButtons("separator1", "Separator",
+                                                 choices = c(Przecinek = ",",
+                                                             Średnik = ";",
+                                                             Tabulator = "\t"),
                                                  selected = ","),
-                                    
-                                    # Horizontal line ----
+                                    radioButtons("decimal1", "Separator dziesiętny",
+                                                 choices = c(Przecinek = ",",
+                                                             Kropka = "."),
+                                                 selected = ","),
+                                    tags$hr(),
+                                    textInput("nazwa_data", label = "Podaj nazwę kolumny, w której znajdują się daty:"),
+                                    textInput("nazwa_ceny", label = "Podaj nazwę kolumny, w której znajdują się ceny:"),
                                     tags$hr()
                                 ),
-                                
                                 mainPanel(
-                                    # Output: Data file ----
-                                    DT::dataTableOutput("dane")
+                                    tabsetPanel(type = "tabs",
+                                                tabPanel("Wczytane dane", DT::dataTableOutput("dane")),
+                                                tabPanel("Stopy zwrotu", DT::dataTableOutput("stopy_zwrotu")),
+                                                tabPanel("Wykres", plotlyOutput("wykres_ceny"))
+                                    )
                                     
                                 )
                             )
                    ),
-                   tabPanel("Stopy",
+                   tabPanel("Dane 2",
                             sidebarLayout(
                                 sidebarPanel(
-                                    # Input: Select a file ----
-                                    fileInput("file1", "Wybierz plik CSV",
+                                    fileInput("file2", "Wybierz plik CSV",
                                               multiple = FALSE,
                                               accept = c("text/csv",
                                                          "text/comma-separated-values,text/plain",
                                                          ".csv")),
-                                    
-                                    # Horizontal line ----
                                     tags$hr(),
-                                    
-                                    # Input: Checkbox if file has header ----
-                                    checkboxInput("header", "Header", TRUE),
-                                    
-                                    # Input: Select separator ----
-                                    radioButtons("sep", "Separator",
-                                                 choices = c(Comma = ",",
-                                                             Semicolon = ";",
-                                                             Tab = "\t"),
+                                    checkboxInput("header2", "Nagłółwek", TRUE),
+                                    radioButtons("separator2", "Separator",
+                                                 choices = c(Przecinek = ",",
+                                                             Średnik = ";",
+                                                             Tabulator = "\t"),
                                                  selected = ","),
-                                    
-                                    # Horizontal line ----
-                                    tags$hr()
+                                    radioButtons("decimal2", "Separator dziesiętny",
+                                                 choices = c(Przecinek = ",",
+                                                             Kropka = "."),
+                                                 selected = ","),
+                                    tags$hr(),
+                                    textInput("nazwa_czas", label = "Podaj nazwę kolumny, w której znajdują się dane związane z czasem:"),
+                                    textInput("nazwa_kolumny", label = "Podaj nazwę kolumny, w której znajdują się dane (docelowy wektor x):")
                                 ),
                                 mainPanel(
-                                
-                                # Output: Data file ----
-                                DT::dataTableOutput("stopy_zwrotu"),
-                                plotOutput("wykres_zamkniecia")
-                                
+                                    tabsetPanel(type = "tabs",
+                                                tabPanel("Wczytane dane", DT::dataTableOutput("dane2")),
+                                                tabPanel("Wykres", plotlyOutput("wykres_dane"))
+                                                )
                                 )
                             )
                     ),
-                   tabPanel("Wyjscie",
+                   tabPanel("Statyczna macierz przejścia",
                             sidebarLayout(
                                 sidebarPanel(
-                                    # Input: Select a dataset ----
-                                    selectInput("typmodelu", "Wybierz typ modelu:",
-                                                choices = c("statyczny", "dynamiczny")),
                                     selectInput("typoptymalizacji", "Wybierz metodę optymalizacji:",
                                                 choices = c("Nelder-Mead", "BFGS")),
-                                    numericInput("num", label = "Numeric input", value = 0.01),
-                                    numericInput("num", label = "Numeric input", value = 0.01)
+                                    h4("Parametry modelu statycznego:"),
+                                    numericInput("p11", label = "P11", value = 0.95),
+                                    numericInput("p22", label = "P22", value = 0.95),
+                                    checkboxInput("wybor_dane2", label = "Dane 2 jako wektor x", value = 1)
                                 ),
                                 mainPanel(
-                                    # Output: Tabset w/ plot, summary, and table ----
                                     tabsetPanel(type = "tabs",
-                                                tabPanel("Parametry wyjściowe", verbatimTextOutput("parametry")),
-                                                tabPanel("Ksi", DT::dataTableOutput("ksi_all")),
-                                                tabPanel("Ksi opóźnione", DT::dataTableOutput("ksi_lag")),
-                                                tabPanel("Wykres")
+                                                tabPanel("Parametry wyjściowe", verbatimTextOutput("parametry_s")),
+                                                tabPanel("Ksi", DT::dataTableOutput("ksi_all_s")),
+                                                tabPanel("Ksi opóźnione", DT::dataTableOutput("ksi_lag_s")),
+                                                tabPanel("Ksi wygładzone", DT::dataTableOutput("ksi_smooth_s")),
+                                                tabPanel("Wykres", plotOutput("wykresy_s")),
+                                                tabPanel("Wykres", plotlyOutput("wykres_test"))
                                     )
                                 )
                             )
-                    )
+                    ),
+                   tabPanel("Dynamiczna macierz przejścia",
+                            sidebarLayout(
+                                sidebarPanel(
+                                    selectInput("typoptymalizacji", "Wybierz metodę optymalizacji:",
+                                                choices = c("Nelder-Mead", "BFGS")),
+                                    tags$hr(),
+                                    h4("Parametry modelu dynamicznego:"),
+                                    numericInput("b0_1", label = "Pierwszy element wektora B0", value = 0.90),
+                                    numericInput("b0_2", label = "Drugi element wektora B0", value = 0.90),
+                                    numericInput("b1_1", label = "Pierwszy element wektora B1", value = 0.90),
+                                    numericInput("b1_2", label = "Pierwszy element wektora B1", value = 0.90),
+                                    checkboxInput("wybor_dane2_d", label = "Dane 2 jako wektor x", value = 1)
+                                ),
+                                mainPanel(
+                                    tabsetPanel(type = "tabs",
+                                                tabPanel("Parametry wyjściowe", verbatimTextOutput("parametry_d")),
+                                                tabPanel("Ksi", DT::dataTableOutput("ksi_all_d")),
+                                                tabPanel("Ksi opóźnione", DT::dataTableOutput("ksi_lag_d")),
+                                                tabPanel("Wykres", plotOutput("wykresy_d"))
+                                    )
+                                )
+                            )
+                   ),
+                   tabPanel("Porównanie",
+                            mainPanel(
+                                verbatimTextOutput("porownanie")
+                            )
+                            )
         )
     )
 )
