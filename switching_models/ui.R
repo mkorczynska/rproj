@@ -4,6 +4,7 @@ library(dplyr)
 library(shinythemes)
 library(ggplot2)
 library(tidyr)
+library(plotly)
 
 shinyUI(
     fluidPage(
@@ -90,8 +91,8 @@ shinyUI(
                                                 tabPanel("Ksi", DT::dataTableOutput("ksi_all_s")),
                                                 tabPanel("Ksi opóźnione", DT::dataTableOutput("ksi_lag_s")),
                                                 tabPanel("Ksi wygładzone", DT::dataTableOutput("ksi_smooth_s")),
-                                                tabPanel("Wykres", plotOutput("wykresy_s")),
-                                                tabPanel("Wykres", plotlyOutput("wykres_test"))
+                                                tabPanel("Wykres ksi", plotlyOutput("wykres_ksi")),
+                                                tabPanel("Wykres ksi wygładzone", plotlyOutput("wykres_ksi_smooth"))
                                     )
                                 )
                             )
@@ -114,7 +115,7 @@ shinyUI(
                                                 tabPanel("Parametry wyjściowe", verbatimTextOutput("parametry_d")),
                                                 tabPanel("Ksi", DT::dataTableOutput("ksi_all_d")),
                                                 tabPanel("Ksi opóźnione", DT::dataTableOutput("ksi_lag_d")),
-                                                tabPanel("Wykres", plotOutput("wykresy_d"))
+                                                tabPanel("Wykres", plotOutput("wykres_ksi_d"))
                                     )
                                 )
                             )

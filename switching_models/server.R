@@ -142,10 +142,16 @@ shinyServer(function(input, output) {
           facet_wrap(~Type, ncol = 1, scales = "free_y")
     })
     
-    output$wykres_test<-renderPlotly({
+    output$wykres_ksi<-renderPlotly({
       plot_data <- cbind(rates, Ksi = ksi_all_s[1,], Smooth_Ksi = ksi_smooth_all_s[1,])
       dw <- plot_data %>% select(Date = czas_1, Ksi)
       plot_ly(dw, x=~dw$Date, y=~dw$Ksi, type = "scatter", mode = 'lines')
+    })
+    
+    output$wykres_ksi_smooth<-renderPlotly({
+      plot_data <- cbind(rates, Ksi = ksi_all_s[1,], Smooth_Ksi = ksi_smooth_all_s[1,])
+      dw <- plot_data %>% select(Date = czas_1, Smooth_Ksi)
+      plot_ly(dw, x=~dw$Date, y=~dw$Smooth_Ksi, type = "scatter", mode = 'lines')
     })
     
     output$parametry_d<-renderPrint({
@@ -155,12 +161,12 @@ shinyServer(function(input, output) {
       
       dat <- data.frame(a = numeric(0), b = numeric(0))
       
-      withProgress(message = 'Making calculations', value = 0, {
+      withProgress(message = 'Obliczanie..', value = 0, {
         number <- 10
         
         for (i in 1:number) {
           dat <- rbind(dat, data.frame(a = rnorm(1), b = rnorm(1)))
-          incProgress(1/number, detail = paste("Doing part", i))
+          incProgress(1/number, detail = paste("Krok: ", i))
           Sys.sleep(0.1)
         }
       })
@@ -219,6 +225,12 @@ shinyServer(function(input, output) {
         geom_line() +
         facet_wrap(~Type, ncol = 1, scales = "free_y") +
         ggtitle("Model przełącznikowy z dynamiczną macierzą przejść")
+    })
+    
+    output$wykres_ksi_d<-renderPlotly({
+      plot_data_d <- cbind(rates, Ksi = ksi_all_d[1,], x = x[,2])
+      dw <- plot_data_d %>% select(Date = czas_1, Ksi, x)
+      plot_ly(dw, x=~dw$Date, y=~dw$Ksi, type = "scatter", mode = 'lines')
     })
     
     output$porownanie<-renderPrint({
